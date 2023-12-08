@@ -1,7 +1,7 @@
 const { GraphQLUpload } = require("graphql-upload");
-const { Phase } = require("../models/phase.model");
-const { File } = require("../models/file.model");
-const { Document } = require("../models/document.model");
+const { Phase } = require("../models/phase");
+const { File } = require("../models/file");
+const { Document } = require("../models/document");
 const path = require("path");
 const fs = require("fs");
 
@@ -34,10 +34,13 @@ const resolvers = {
   },
   Document: {
     phase: async (parent) => {
+      console.log("Parent:", parent);
       try {
         const phase = await Phase.findById(parent.phase);
+        console.log("Phase:", phase);
         return phase;
       } catch (error) {
+        console.error("Error fetching phase for document:", error.message);
         throw new Error(`Error fetching phase for document: ${error.message}`);
       }
     },
@@ -61,7 +64,6 @@ const resolvers = {
     },
   },
   Mutation: {
-    // Create a new document during the Project Initiation, Requirements, or Design phase
     createDocument: async (_, args) => {
       try {
         const newDocument = await Document.create(args);
@@ -70,8 +72,6 @@ const resolvers = {
         throw new Error(`Error creating document: ${error.message}`);
       }
     },
-
-    // Edit an existing document
     editDocument: async (_, args) => {
       try {
         const updatedDocument = await Document.findByIdAndUpdate(
@@ -84,8 +84,6 @@ const resolvers = {
         throw new Error(`Error editing document: ${error.message}`);
       }
     },
-
-    // Delete an existing document
     deleteDocument: async (_, { id }) => {
       try {
         const deletedDocument = await Document.findByIdAndDelete(id);
@@ -94,8 +92,6 @@ const resolvers = {
         throw new Error(`Error deleting document: ${error.message}`);
       }
     },
-
-    // Create a new file associated with a document
     createFile: async (_, args) => {
       try {
         const newFile = await File.create(args);
@@ -104,8 +100,6 @@ const resolvers = {
         throw new Error(`Error creating file: ${error.message}`);
       }
     },
-
-    // Delete an existing file
     deleteFile: async (_, { id }) => {
       try {
         const deletedFile = await File.findByIdAndDelete(id);

@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const DocumentSchema = new mongoose.Schema({
   phase: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Phase',
+    ref: "Phase",
     required: true,
   },
   title: {
@@ -20,11 +20,11 @@ const DocumentSchema = new mongoose.Schema({
   files: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'File',
+      ref: "File",
     },
   ],
 });
 
-const Document = mongoose.model('Document', DocumentSchema);
+const Document = mongoose.model("Document", DocumentSchema);
 
 module.exports = Document;
