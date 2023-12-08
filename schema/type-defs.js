@@ -14,7 +14,7 @@ const typeDefs = gql`
     phase: Phase!
     title: String!
     content: String!
-    imageUrl: String # For Usecase Diagram in Requirements Phase
+    imageUrl: String
     files: [File]
   }
 
@@ -38,7 +38,6 @@ const typeDefs = gql`
       content: String!
       imageUrl: String
     ): Document
-    createFile(documentId: ID!, fileName: String!, filePath: String!): File
     editDocument(
       id: ID!
       title: String
@@ -46,6 +45,7 @@ const typeDefs = gql`
       imageUrl: String
     ): Document
     deleteDocument(id: ID!): ID
+    createFile(documentId: ID!, fileName: String!, filePath: String!): File
     deleteFile(id: ID!): ID
   }
 
