@@ -15,7 +15,7 @@ const ProjectSchema = new mongoose.Schema({
   ],
 });
 
-const Project = mongoose.model("Project", ProjectSchema);
+const Project = mongoose.model("project", ProjectSchema);
 
 ProjectSchema.pre("save", async function (next) {
   try {
@@ -46,4 +46,4 @@ ProjectSchema.pre("save", async function (next) {
   }
 });
 
-module.exports = Project;
+module.exports = { Project };

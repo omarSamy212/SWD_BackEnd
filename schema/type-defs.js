@@ -5,7 +5,8 @@ const typeDefs = gql`
 
   type Phase {
     id: ID!
-    name: String!
+    name: String
+    documents: [Document]
   }
 
   type Document {
@@ -28,10 +29,11 @@ const typeDefs = gql`
   type Project {
     id: ID!
     name: String!
+    phases: [Phase]
   }
 
   input ProjectInput {
-    name: String!
+    name: String
   }
 
   input DocumentInput {
@@ -51,7 +53,7 @@ const typeDefs = gql`
 
   input FileInput {
     documentId: ID!
-    fileName: String!
+    fileName: String
     filePath: String!
   }
 
