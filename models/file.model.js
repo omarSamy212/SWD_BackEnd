@@ -4,18 +4,16 @@ const FileSchema = new mongoose.Schema({
   document: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Document",
-    required: true,
   },
-  fileName: {
-    type: String,
-    required: true,
-  },
-  filePath: {
-    type: String,
-    required: true,
+  filename: String,
+  mimetype: String,
+  encoding: String,
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 
-const File = mongoose.model("file", FileSchema);
+const File = mongoose.model("File", FileSchema);
 
-module.exports = {File};
+module.exports = File;

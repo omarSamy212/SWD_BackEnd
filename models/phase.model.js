@@ -1,14 +1,9 @@
 const mongoose = require("mongoose");
-const { Document } = require("./document.model"); // Adjust the path based on your file structure
 
 const PhaseSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-  },
-  project: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Project",
   },
   documents: [
     {
@@ -18,6 +13,6 @@ const PhaseSchema = new mongoose.Schema({
   ],
 });
 
-const Phase = mongoose.model("phase", PhaseSchema);
+const Phase = mongoose.model("Phase", PhaseSchema);
 
 module.exports = { Phase, PhaseSchema };

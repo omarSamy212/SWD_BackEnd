@@ -5,14 +5,13 @@ const typeDefs = gql`
 
   type Phase {
     id: ID!
-    name: String
+    name: String!
     documents: [Document]
   }
 
   type Document {
     id: ID!
     phase: Phase!
-    project: Project!
     title: String!
     content: String!
     imageUrl: String
@@ -26,19 +25,22 @@ const typeDefs = gql`
     filePath: String!
   }
 
-  type Project {
-    id: ID!
-    name: String!
+  type Query {
     phases: [Phase]
+    documents: [Document]
+    files: [File]
   }
 
-  input ProjectInput {
-    name: String
+  type Mutation {
+    createDocument(input: DocumentInput): Document
+    editDocument(input: DocumentEditInput): Document
+    deleteDocument(id: ID!): ID
+    uploadFile(input: FileInput): File
+    deleteFile(id: ID!): ID
   }
 
   input DocumentInput {
     phaseId: ID!
-    projectId: ID!
     title: String!
     content: String!
     imageUrl: String
@@ -53,30 +55,7 @@ const typeDefs = gql`
 
   input FileInput {
     documentId: ID!
-    fileName: String
-    filePath: String!
-  }
-
-  type Query {
-    phases: [Phase]
-    documents: [Document]
-    files: [File]
-    projects: [Project]
-  }
-
-  type Mutation {
-    createProject(input: ProjectInput): Project
-    deleteProject(id: ID!): ID
-    createDocument(input: DocumentInput): Document
-    editDocument(input: DocumentEditInput): Document
-    deleteDocument(id: ID!): ID
-    createFile(input: FileInput): File
-    deleteFile(id: ID!): ID
-  }
-
-  schema {
-    query: Query
-    mutation: Mutation
+    file: Upload!
   }
 `;
 
