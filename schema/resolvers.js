@@ -1,13 +1,16 @@
-const { Project } = require("../models/project");
-const { Phase } = require("../models/phase");
-const { File } = require("../models/file");
-const { Document } = require("../models/document");
+const { Phase } = require("../models/phase.model");
+const { File } = require("../models/file.model");
+const { Document } = require("../models/document.model");
+const { Project } = require("../models/project.model");
 
 const resolvers = {
   Query: {
     projects: async () => {
       try {
-        const projects = await Project.find().populate("phases documents");
+        const projects = await Project.find().populate({
+          path: "phases",
+          populate: { path: "documents" },
+        });
         return projects;
       } catch (error) {
         throw new Error(`Error fetching projects: ${error.message}`);
@@ -77,11 +80,19 @@ const resolvers = {
     },
   },
   Mutation: {
-    createProject: async (_, { name }) => {
+    createProject: async (_, args) => {
       try {
-        const newProject = await Project.create({ name });
+        const { name } = args.Project;
+        console.log("Creating project with name:", name);
+  
+        const newProject = new Project({ name });
+        await newProject.save();
+  
+        console.log("Created project:", newProject);
+  
         return newProject;
       } catch (error) {
+        console.error("Error creating project:", error.message);
         throw new Error(`Error creating project: ${error.message}`);
       }
     },

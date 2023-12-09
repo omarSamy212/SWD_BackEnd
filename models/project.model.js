@@ -1,29 +1,34 @@
-// project.model.js
 const mongoose = require("mongoose");
-const Phase = require("./phase");
+const Phase = require("./phase.model"); // Adjust the path based on your file structure
 
 const ProjectSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true, // Each project should have a unique name
+    unique: true,
   },
+  phases: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Phase",
+    },
+  ],
 });
 
 const Project = mongoose.model("Project", ProjectSchema);
 
-// Seed phases for a new project
 ProjectSchema.pre("save", async function (next) {
   try {
     const project = this;
 
-    // Check if the project is new (not an update)
+    console.log("Project:", project);
+
     if (project.isNew) {
-      // Predefined phase names
       const phaseNames = ["INITIATION", "REQUIREMENTS", "DESIGN"];
 
-      // Seed phases for the new project
       for (const phaseName of phaseNames) {
+        console.log("Creating phase:", phaseName);
+
         const phase = await Phase.create({
           name: phaseName,
           project: project._id,
@@ -36,6 +41,7 @@ ProjectSchema.pre("save", async function (next) {
 
     next();
   } catch (error) {
+    console.error("Error in pre-save hook:", error);
     next(error);
   }
 });

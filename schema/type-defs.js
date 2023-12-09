@@ -1,6 +1,5 @@
 const { gql } = require("apollo-server-express");
 
-// schema
 const typeDefs = gql`
   scalar Upload
 
@@ -31,6 +30,31 @@ const typeDefs = gql`
     name: String!
   }
 
+  input ProjectInput {
+    name: String!
+  }
+
+  input DocumentInput {
+    phaseId: ID!
+    projectId: ID!
+    title: String!
+    content: String!
+    imageUrl: String
+  }
+
+  input DocumentEditInput {
+    id: ID!
+    title: String
+    content: String
+    imageUrl: String
+  }
+
+  input FileInput {
+    documentId: ID!
+    fileName: String!
+    filePath: String!
+  }
+
   type Query {
     phases: [Phase]
     documents: [Document]
@@ -39,23 +63,12 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    createProject(name: String!): Project
+    createProject(input: ProjectInput): Project
     deleteProject(id: ID!): ID
-    createDocument(
-      phaseId: ID!
-      projectId: ID!
-      title: String!
-      content: String!
-      imageUrl: String
-    ): Document
-    editDocument(
-      id: ID!
-      title: String
-      content: String
-      imageUrl: String
-    ): Document
+    createDocument(input: DocumentInput): Document
+    editDocument(input: DocumentEditInput): Document
     deleteDocument(id: ID!): ID
-    createFile(documentId: ID!, fileName: String!, filePath: String!): File
+    createFile(input: FileInput): File
     deleteFile(id: ID!): ID
   }
 
