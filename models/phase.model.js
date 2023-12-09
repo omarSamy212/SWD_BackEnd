@@ -18,6 +18,6 @@ const PhaseSchema = new mongoose.Schema({
   ],
 });
 
-const Phase = mongoose.model("Phase", PhaseSchema);
+const Phase = mongoose.model("phase", PhaseSchema);
 
 module.exports = { Phase, PhaseSchema };
