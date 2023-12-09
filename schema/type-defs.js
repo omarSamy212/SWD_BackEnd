@@ -12,6 +12,7 @@ const typeDefs = gql`
   type Document {
     id: ID!
     phase: Phase!
+    project: Project!
     title: String!
     content: String!
     imageUrl: String
@@ -25,15 +26,24 @@ const typeDefs = gql`
     filePath: String!
   }
 
+  type Project {
+    id: ID!
+    name: String!
+  }
+
   type Query {
     phases: [Phase]
     documents: [Document]
     files: [File]
+    projects: [Project]
   }
 
   type Mutation {
+    createProject(name: String!): Project
+    deleteProject(id: ID!): ID
     createDocument(
       phaseId: ID!
+      projectId: ID!
       title: String!
       content: String!
       imageUrl: String

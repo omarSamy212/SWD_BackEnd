@@ -1,12 +1,18 @@
-const { GraphQLUpload } = require("graphql-upload");
+const { Project } = require("../models/project");
 const { Phase } = require("../models/phase");
 const { File } = require("../models/file");
 const { Document } = require("../models/document");
-const path = require("path");
-const fs = require("fs");
 
 const resolvers = {
   Query: {
+    projects: async () => {
+      try {
+        const projects = await Project.find().populate("phases documents");
+        return projects;
+      } catch (error) {
+        throw new Error(`Error fetching projects: ${error.message}`);
+      }
+    },
     phases: async () => {
       try {
         const phases = await Phase.find();
@@ -17,7 +23,7 @@ const resolvers = {
     },
     documents: async () => {
       try {
-        const documents = await Document.find();
+        const documents = await Document.find().populate("project phase files");
         return documents;
       } catch (error) {
         throw new Error(`Error fetching documents: ${error.message}`);
@@ -25,7 +31,7 @@ const resolvers = {
     },
     files: async () => {
       try {
-        const files = await File.find();
+        const files = await File.find().populate("document");
         return files;
       } catch (error) {
         throw new Error(`Error fetching files: ${error.message}`);
@@ -33,14 +39,21 @@ const resolvers = {
     },
   },
   Document: {
+    project: async (parent) => {
+      try {
+        const project = await Project.findById(parent.project);
+        return project;
+      } catch (error) {
+        throw new Error(
+          `Error fetching project for document: ${error.message}`
+        );
+      }
+    },
     phase: async (parent) => {
-      console.log("Parent:", parent);
       try {
         const phase = await Phase.findById(parent.phase);
-        console.log("Phase:", phase);
         return phase;
       } catch (error) {
-        console.error("Error fetching phase for document:", error.message);
         throw new Error(`Error fetching phase for document: ${error.message}`);
       }
     },
@@ -64,6 +77,22 @@ const resolvers = {
     },
   },
   Mutation: {
+    createProject: async (_, { name }) => {
+      try {
+        const newProject = await Project.create({ name });
+        return newProject;
+      } catch (error) {
+        throw new Error(`Error creating project: ${error.message}`);
+      }
+    },
+    deleteProject: async (_, { id }) => {
+      try {
+        const deletedProject = await Project.findByIdAndDelete(id);
+        return deletedProject ? id : null;
+      } catch (error) {
+        throw new Error(`Error deleting project: ${error.message}`);
+      }
+    },
     createDocument: async (_, args) => {
       try {
         const newDocument = await Document.create(args);
