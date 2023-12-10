@@ -1,151 +1,159 @@
-const { Document } = require("../models/document.model");
-const { File } = require("../models/file.model");
 const { Phase } = require("../models/phase.model");
+const { Document } = require("../models/document.model");
+const { File } = require("../models/file.model"); // Change the alias to File
+const fs = require("fs");
+const { GraphQLUpload } = require("graphql-upload");
+const path = require("path");
+
+function generateRandomString(length) {
+  let result = "";
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength = characters.length;
+  let counter = 0;
+  while (counter < length) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    counter += 1;
+  }
+  return result;
+}
 
 const resolvers = {
+  Upload: GraphQLUpload,
   Query: {
-    documents: async () => {
-      try {
-        const documents = await Document.find().populate("files");
-        return documents;
-      } catch (error) {
-        throw new Error(`Error fetching documents: ${error.message}`);
-      }
+    allPhases: async () => {
+      return await Phase.find();
     },
-    files: async () => {
-      try {
-        const files = await File.find();
-        return files;
-      } catch (error) {
-        throw new Error(`Error fetching files: ${error.message}`);
-      }
+    allDocuments: async () => {
+      return await Document.find();
     },
-    phases: async () => {
-      try {
-        const phases = await Phase.find().populate("documents");
-        return phases;
-      } catch (error) {
-        throw new Error(`Error fetching phases: ${error.message}`);
-      }
-    },
-  },
-  Document: {
-    files: async (parent) => {
-      try {
-        const files = await File.find({ document: parent.id });
-        return files;
-      } catch (error) {
-        throw new Error(`Error fetching files for document: ${error.message}`);
-      }
-    },
-    phase: async (parent) => {
-      try {
-        const phase = await Phase.findById(parent.phase);
-        return phase;
-      } catch (error) {
-        throw new Error(`Error fetching phase for document: ${error.message}`);
-      }
-    },
-  },
-  Phase: {
-    documents: async (parent) => {
-      try {
-        const documents = await Document.find({ phase: parent.id });
-        return documents;
-      } catch (error) {
-        throw new Error(`Error fetching documents for phase: ${error.message}`);
-      }
+    allFiles: async () => {
+      return await File.find(); // Change to use File
     },
   },
   Mutation: {
-    createDocument: async (_, args) => {
-      try {
-        const { phaseId, title, content, imageUrl } = args.input;
+    setupPhases: async () => {
+      // Check if phases already exist
+      const existingPhases = await Phase.find();
 
-        // Check if the phaseId is valid
-        const phase = await Phase.findById(phaseId);
-        if (!phase) {
-          throw new Error(`Invalid phase ID: ${phaseId}`);
-        }
-
-        // Create the document with the provided data
-        const newDocument = new Document({
-          phase: phaseId,
-          title,
-          content,
-          imageUrl,
-        });
-
-        // Save the document
-        await newDocument.save();
-
-        // Initialize the documents array if not present
-        phase.documents = phase.documents || [];
-
-        // Update the documents in the phase
-        phase.documents.push(newDocument._id);
-        await phase.save();
-
-        return newDocument;
-      } catch (error) {
-        console.error("Error creating document:", error.message);
-        throw new Error(`Error creating document: ${error.message}`);
+      if (existingPhases.length > 0) {
+        console.log("Phases already exist, skipping setup.");
+        return existingPhases;
       }
+
+      const predefinedPhases = [
+        { name: "Project Initiation" },
+        { name: "Requirements" },
+        { name: "Design" },
+      ];
+
+      const createdPhases = await Phase.create(predefinedPhases);
+      console.log("omar4");
+
+      return createdPhases;
     },
-    editDocument: async (_, args) => {
-      try {
-        const updatedDocument = await Document.findByIdAndUpdate(
-          args.input.id,
-          args.input,
-          { new: true }
-        );
-        return updatedDocument;
-      } catch (error) {
-        throw new Error(`Error editing document: ${error.message}`);
-      }
+
+    createDocument: async (_, { title, content, phaseId }) => {
+      const documentInstance = new Document({
+        title,
+        content,
+        phaseId,
+        fileIds: [],
+      });
+      await documentInstance.save();
+      return documentInstance;
+    },
+    editDocument: async (_, { id, title, content, phaseId }) => {
+      return await Document.findByIdAndUpdate(
+        id,
+        { title, content, phaseId },
+        { new: true }
+      );
     },
     deleteDocument: async (_, { id }) => {
-      try {
-        const deletedDocument = await Document.findByIdAndDelete(id);
-        return deletedDocument ? id : null;
-      } catch (error) {
-        throw new Error(`Error deleting document: ${error.message}`);
+      const deletedDocument = await Document.findByIdAndDelete(id);
+
+      // If the document is deleted, also remove associated files
+      if (deletedDocument) {
+        const fileIds = deletedDocument.fileIds || [];
+        await File.deleteMany({ _id: { $in: fileIds } });
       }
+
+      return id;
     },
-    createFile: async (_, args, context) => {
-      try {
-        const { file } = context;
 
-        if (!file) {
-          throw new Error("File is required.");
-        }
+    createFile: async (_, { file, documentId, phaseId }) => {
+      const { createReadStream, filename, mimetype } = await file;
 
-        const { documentId, fileName, filePath } = args.input;
+      // Generate a unique filename or use the original filename
+      const randomName = generateRandomString(12) + path.extname(filename);
 
-        // Handle file upload logic and save the file information
-        // to your database, e.g., create a new File document
+      // Specify the path where you want to store the file
+      const filePath = path.join(
+        __dirname,
+        "..",
+        "public",
+        "uploads",
+        randomName
+      );
 
-        const newFile = new File({
-          document: documentId,
-          fileName,
-          filePath,
-        });
+      // Create a writable stream to store the file
+      // const writeStream = fs.createWriteStream(filePath);
 
-        await newFile.save();
+      // Pipe the file data to the writable stream
+      // Create a writable stream to store the file
+      const writeStream = fs.createWriteStream(filePath);
+      await new Promise((resolve, reject) =>
+        createReadStream()
+          .pipe(writeStream)
+          .on("finish", resolve)
+          .on("error", reject)
+      );
 
-        return newFile;
-      } catch (error) {
-        console.error("Error creating file:", error.message);
-        throw new Error(`Error creating file: ${error.message}`);
+      // Read the file data as a Buffer
+      const fileDataBuffer = await fs.promises.readFile(filePath);
+
+      // Create an instance of File
+      const fileInstance = new File({
+        fileName: randomName,
+        documentId,
+        phaseId,
+        mimeType: mimetype,
+        fileData: fileDataBuffer, // Provide the file data as a Buffer
+        filePath: filePath,
+      });
+
+      // Save the file data in your database
+      await fileInstance.save();
+
+      // Update the Document with the new file reference
+      const documentInstance = await Document.findById(documentId);
+      if (documentInstance) {
+        documentInstance.fileIds.push(fileInstance.id);
+        await documentInstance.save();
       }
+
+      return {
+        url: `http://localhost:4000/uploads/${randomName}`,
+        fileName: randomName,
+        mimeType: mimetype,
+        documentId: documentId,
+        phaseId: phaseId,
+      };
     },
+
     deleteFile: async (_, { id }) => {
-      try {
-        const deletedFile = await File.findByIdAndDelete(id);
-        return deletedFile ? id : null;
-      } catch (error) {
-        throw new Error(`Error deleting file: ${error.message}`);
+      const deletedFile = await File.findByIdAndRemove(id);
+
+      // Remove the file reference from the associated document
+      if (deletedFile) {
+        await Document.updateOne(
+          { _id: deletedFile.documentId },
+          { $pull: { fileIds: id } }
+        );
       }
+
+      return id;
     },
   },
 };

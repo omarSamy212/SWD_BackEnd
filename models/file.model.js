@@ -1,19 +1,26 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const FileSchema = new mongoose.Schema({
-  document: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Document",
+const fileSchema = new mongoose.Schema({
+  fileName: {
+    type: String,
+    required: true,
   },
-  filename: String,
-  mimetype: String,
-  encoding: String,
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  documentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SDLCDocument',
+    required: true,
+  },
+  phaseId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Phase',
+    required: true,
+  },
+  fileData: {
+    type: Buffer,
+    required: true,
   },
 });
 
-const File = mongoose.model("File", FileSchema);
+const File = mongoose.model('File', fileSchema);
 
-module.exports = File;
+module.exports = {File};

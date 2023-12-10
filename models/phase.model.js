@@ -1,18 +1,12 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const PhaseSchema = new mongoose.Schema({
+const phaseSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
   },
-  documents: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Document",
-    },
-  ],
 });
 
-const Phase = mongoose.model("Phase", PhaseSchema);
+const Phase = mongoose.model('Phase', phaseSchema);
 
-module.exports = { Phase, PhaseSchema };
+module.exports = {Phase};

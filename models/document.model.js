@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const DocumentSchema = new mongoose.Schema({
+const documentSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
@@ -9,20 +9,17 @@ const DocumentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  imageUrl: String,
-  files: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "File",
-    },
-  ],
-  phase: {
+  phaseId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Phase",
+    ref: 'Phase',
     required: true,
   },
+  fileIds: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'UploadedFile',
+  }],
 });
 
-const Document = mongoose.model("Document", DocumentSchema);
+const Document = mongoose.model('Document', documentSchema);
 
-module.exports = { Document, DocumentSchema };
+module.exports = {Document};

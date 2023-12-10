@@ -4,59 +4,41 @@ const typeDefs = gql`
   scalar Upload
 
   type Phase {
-    id: ID!
-    name: String!
-    documents: [Document]
+    id: ID
+    name: String
   }
-
+  
   type Document {
-    id: ID!
-    phase: Phase!
-    title: String!
-    content: String!
-    imageUrl: String
-    files: [File]
-  }
-
-  type File {
-    id: ID!
-    document: Document!
-    fileName: String!
-    filePath: String!
-  }
-
-  type Query {
-    phases: [Phase]
-    documents: [Document]
-    files: [File]
-  }
-
-  type Mutation {
-    createDocument(input: DocumentInput): Document
-    editDocument(input: DocumentEditInput): Document
-    deleteDocument(id: ID!): ID
-    uploadFile(input: FileInput): File
-    deleteFile(id: ID!): ID
-  }
-
-  input DocumentInput {
-    phaseId: ID!
-    title: String!
-    content: String!
-    imageUrl: String
-  }
-
-  input DocumentEditInput {
-    id: ID!
+    id: ID
     title: String
     content: String
-    imageUrl: String
+    phaseId: ID
+    fileIds: [ID]
   }
-
-  input FileInput {
-    documentId: ID!
-    file: Upload!
+  
+  type File {
+    id: ID
+    fileName: String
+    documentId: ID
+    phaseId: ID
+    fileData: String
   }
+  
+  type Query {
+    allPhases: [Phase]
+    allDocuments: [Document]
+    allFiles: [File]
+  }
+  
+  type Mutation {
+    setupPhases: [Phase]
+    createDocument(title: String, content: String, phaseId: ID): Document
+    editDocument(id: ID, title: String, content: String, phaseId: ID): Document
+    deleteDocument(id: ID): ID
+    createFile(file: Upload!, documentId: ID, phaseId: ID): File
+    deleteFile(id: ID): ID
+  }
+  
 `;
 
 module.exports = { typeDefs };
